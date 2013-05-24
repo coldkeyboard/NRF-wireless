@@ -1,0 +1,15 @@
+_wl_module_data_ready: CODE, 586 0 42
+_ISR: CODE, 8 0 246
+_wl_module_config: CODE, 356 0 88
+_main: CODE, 258 0 98
+_wl_module_config_register: CODE, 728 0 26
+i2_spi_fast_shift: CODE, 802 0 22
+_wl_module_init: CODE, 702 0 26
+__initialization: CODE, 824 0 12
+_wl_module_get_data: CODE, 444 0 72
+_spi_init: CODE, 668 0 34
+__delay_10ms: CODE, 628 0 40
+_spi_transfer_sync: CODE, 516 0 70
+_spi_fast_shift: CODE, 780 0 22
+i2_wl_module_config_register: CODE, 754 0 26
+Total: 824
