@@ -38,6 +38,8 @@ int main(void){
     unsigned char maincounter =0;
     unsigned char k;
 
+    // status pin to indicate when master
+    // sends a message only for debugging 
     TRISDbits.TRISD4 = 0;
     LATDbits.LATD4 = 1;
 
@@ -50,7 +52,7 @@ int main(void){
     wl_module_tx_config(wl_module_TX_NR_0); //Config Module
 
     while(1){
-        LATDbits.LATD4 = 0;
+        LATDbits.LATD4 = 0; // turn indicator LED on
         for (k=0; k<=wl_module_PAYLOAD-1; k++){
             payload[k] = k;
 	}
@@ -65,7 +67,7 @@ int main(void){
             maincounter = 0;
         }
         _delay_10ms(50);
-        LATDbits.LATD4 = 1;
+        LATDbits.LATD4 = 1; // turn indicator LED off
         _delay_10ms(50);
     }
 
