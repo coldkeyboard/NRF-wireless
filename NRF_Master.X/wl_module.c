@@ -28,11 +28,7 @@
 
 
 */
-#define _XTAL_FREQ 16000000
-#include <xc.h>
-#include "wl_module.h"
-#include "nRF24L01.h"
-#include "spi.h"
+#include "main.h"
 
 // Defines for setting the wl_module registers for transmitting or receiving mode
 #define TX_POWERUP wl_module_config_register(CONFIG, wl_module_CONFIG | ( (1<<PWR_UP) | (0<<PRIM_RX) ) )
@@ -48,18 +44,19 @@ void wl_module_init(void)
 {
     // Define CSN and CE as Output and set them to default
     TRISBbits.TRISB4 = 0;
-    TRISBbits.TRISB3 = 0;
+    TRISBbits.TRISB5 = 0;
     wl_module_CE_lo;
     wl_module_CSN_hi;
 
     // set up INT2
-    ANSELBbits.ANSB2 = 0; // digital input buffer enabled
-    TRISBbits.TRISB2 = 1; // RB2 as input
+    ANSELBbits.ANSB1 = 0; // digital input buffer enabled
+    TRISBbits.TRISB1 = 1; // RB2 as input
     INTCON2bits.INTEDG2 = 0; // trigger interrupt on falling edge
     INTCON3bits.INT2IE = 1; // enable INT2 interrupt
 
     // Initialize spi module
     spi_init();
+    uart_puts("spi_init\r\n");
 }
 
 
@@ -69,9 +66,9 @@ void wl_module_config(void)
 {
     // Set RF channel
     wl_module_config_register(RF_CH,wl_module_CH);
-	// Set data speed & Output Power configured in wl_module.h
-	wl_module_config_register(RF_SETUP,wl_module_RF_SETUP);
-	// Set length of incoming payload
+    // Set data speed & Output Power configured in wl_module.h
+    wl_module_config_register(RF_SETUP,wl_module_RF_SETUP);
+    // Set length of incoming payload
     wl_module_config_register(RX_PW_P0, wl_module_PAYLOAD);
 
     // Start receiver
@@ -125,68 +122,74 @@ extern void wl_module_rx_config(void)
 // when you call this Function.
 //  Each TX will get a TX-Address corresponding to the RX-Device.
 // RX_Address_Pipe_0 must be the same as the TX-Address
-extern void wl_module_tx_config(unsigned char tx_nr)
-{
-	unsigned char tx_addr[5];
+extern void wl_module_tx_config(unsigned char tx_nr) {
+    unsigned char tx_addr[5];
 
     // Set RF channel
-    wl_module_config_register(RF_CH,wl_module_CH);
-	// Set data speed & Output Power configured in wl_module.h
-	wl_module_config_register(RF_SETUP,wl_module_RF_SETUP);
-	//Config the CONFIG Register (Mask IRQ, CRC, etc)
-	wl_module_config_register(CONFIG, wl_module_CONFIG);
+    uart_puts("config_register1...\r\n");
+    wl_module_config_register(RF_CH, wl_module_CH);
+    uart_puts("Set RF channel\r\n");
+    // Set data speed & Output Power configured in wl_module.h
+    uart_puts("config_register2...\r\n");
+    wl_module_config_register(RF_SETUP, wl_module_RF_SETUP);
+    uart_puts("Set data speed & Output Power\r\n");
+    //Config the CONFIG Register (Mask IRQ, CRC, etc)
+    uart_puts("config_register3...\r\n");
+    wl_module_config_register(CONFIG, wl_module_CONFIG);
+    uart_puts("Config the CONFIG Register\r\n");
     // Set length of incoming payload
     //wl_module_config_register(RX_PW_P0, wl_module_PAYLOAD);
 
-	wl_module_config_register(SETUP_RETR,(SETUP_RETR_ARD_750 | SETUP_RETR_ARC_15));
+    uart_puts("Starting wl_module_config_register4...\r\n");
+    wl_module_config_register(SETUP_RETR, (SETUP_RETR_ARD_750 | SETUP_RETR_ARC_15));
+    uart_puts("wl_module_config_register\r\n");
 
-	//set the TX address for the pipe with the same number as the iteration
-			switch(tx_nr)
-			{
-				case 0: //setup TX address as default RX address for pipe 0 (E7:E7:E7:E7:E7)
-					tx_addr[0] = tx_addr[1] = tx_addr[2] = tx_addr[3] = tx_addr[4] = RX_ADDR_P0_B0_DEFAULT_VAL;
-					wl_module_set_TADDR(tx_addr);
-					wl_module_set_RADDR(tx_addr);
-					break;
-				case 1: //setup TX address as default RX address for pipe 1 (C2:C2:C2:C2:C2)
-					tx_addr[0] = tx_addr[1] = tx_addr[2] = tx_addr[3] = tx_addr[4] = RX_ADDR_P1_B0_DEFAULT_VAL;
-					wl_module_set_TADDR(tx_addr);
-					wl_module_set_RADDR(tx_addr);
-					break;
-				case 2: //setup TX address as default RX address for pipe 2 (C2:C2:C2:C2:C3)
-					tx_addr[1] = tx_addr[2] = tx_addr[3] = tx_addr[4] = RX_ADDR_P1_B0_DEFAULT_VAL;
-					tx_addr[0] = RX_ADDR_P2_DEFAULT_VAL;
-					wl_module_set_TADDR(tx_addr);
-					wl_module_set_RADDR(tx_addr);
-					break;
-				case 3: //setup TX address as default RX address for pipe 3 (C2:C2:C2:C2:C4)
-					tx_addr[1] = tx_addr[2] = tx_addr[3] = tx_addr[4] = RX_ADDR_P1_B0_DEFAULT_VAL;
-					tx_addr[0] = RX_ADDR_P3_DEFAULT_VAL;
-					wl_module_set_TADDR(tx_addr);
-					wl_module_set_RADDR(tx_addr);
-					break;
-				case 4: //setup TX address as default RX address for pipe 4 (C2:C2:C2:C2:C5)
-					tx_addr[1] = tx_addr[2] = tx_addr[3] = tx_addr[4] = RX_ADDR_P1_B0_DEFAULT_VAL;
-					tx_addr[0] = RX_ADDR_P4_DEFAULT_VAL;
-					wl_module_set_TADDR(tx_addr);
-					wl_module_set_RADDR(tx_addr);
-					break;
-				case 5: //setup TX address as default RX address for pipe 5 (C2:C2:C2:C2:C6)
-					tx_addr[1] = tx_addr[2] = tx_addr[3] = tx_addr[4] = RX_ADDR_P1_B0_DEFAULT_VAL;
-					tx_addr[0] = RX_ADDR_P5_DEFAULT_VAL;
-					wl_module_set_TADDR(tx_addr);
-					wl_module_set_RADDR(tx_addr);
-					break;
-			}
+    //set the TX address for the pipe with the same number as the iteration
+    switch (tx_nr) {
+        case 0: //setup TX address as default RX address for pipe 0 (E7:E7:E7:E7:E7)
+            tx_addr[0] = tx_addr[1] = tx_addr[2] = tx_addr[3] = tx_addr[4] = RX_ADDR_P0_B0_DEFAULT_VAL;
+            wl_module_set_TADDR(tx_addr);
+            wl_module_set_RADDR(tx_addr);
+            break;
+        case 1: //setup TX address as default RX address for pipe 1 (C2:C2:C2:C2:C2)
+            tx_addr[0] = tx_addr[1] = tx_addr[2] = tx_addr[3] = tx_addr[4] = RX_ADDR_P1_B0_DEFAULT_VAL;
+            wl_module_set_TADDR(tx_addr);
+            wl_module_set_RADDR(tx_addr);
+            break;
+        case 2: //setup TX address as default RX address for pipe 2 (C2:C2:C2:C2:C3)
+            tx_addr[1] = tx_addr[2] = tx_addr[3] = tx_addr[4] = RX_ADDR_P1_B0_DEFAULT_VAL;
+            tx_addr[0] = RX_ADDR_P2_DEFAULT_VAL;
+            wl_module_set_TADDR(tx_addr);
+            wl_module_set_RADDR(tx_addr);
+            break;
+        case 3: //setup TX address as default RX address for pipe 3 (C2:C2:C2:C2:C4)
+            tx_addr[1] = tx_addr[2] = tx_addr[3] = tx_addr[4] = RX_ADDR_P1_B0_DEFAULT_VAL;
+            tx_addr[0] = RX_ADDR_P3_DEFAULT_VAL;
+            wl_module_set_TADDR(tx_addr);
+            wl_module_set_RADDR(tx_addr);
+            break;
+        case 4: //setup TX address as default RX address for pipe 4 (C2:C2:C2:C2:C5)
+            tx_addr[1] = tx_addr[2] = tx_addr[3] = tx_addr[4] = RX_ADDR_P1_B0_DEFAULT_VAL;
+            tx_addr[0] = RX_ADDR_P4_DEFAULT_VAL;
+            wl_module_set_TADDR(tx_addr);
+            wl_module_set_RADDR(tx_addr);
+            break;
+        case 5: //setup TX address as default RX address for pipe 5 (C2:C2:C2:C2:C6)
+            tx_addr[1] = tx_addr[2] = tx_addr[3] = tx_addr[4] = RX_ADDR_P1_B0_DEFAULT_VAL;
+            tx_addr[0] = RX_ADDR_P5_DEFAULT_VAL;
+            wl_module_set_TADDR(tx_addr);
+            wl_module_set_RADDR(tx_addr);
+            break;
+    }
 
-	PTX =0;
-	TX_POWERUP;
-	/*
-    // Start receiver
-    PTX = 0;        // Start in receiving mode
-    RX_POWERUP;     // Power up in receiving mode
-    wl_module_CE_hi;     // Listening for pakets
-	*/
+    PTX = 0;
+    TX_POWERUP;
+    /*
+// Start receiver
+PTX = 0;        // Start in receiving mode
+RX_POWERUP;     // Power up in receiving mode
+wl_module_CE_hi;     // Listening for pakets
+     */
 }
 
 //sets the TX address in the TX_ADDR register
@@ -439,6 +442,7 @@ extern unsigned char wl_module_get_data(unsigned char * data)
 void wl_module_config_register(unsigned char reg, unsigned char value)
 // Clocks only one byte into the given wl-module register
 {
+    uart_puts("wl_module_config_register called\r\n");
     wl_module_CSN_lo;
     spi_fast_shift(W_REGISTER | (REGISTER_MASK & reg));
     spi_fast_shift(value);
@@ -468,7 +472,22 @@ void wl_module_send(unsigned char * value, unsigned char len)
 // Sends a data package to the default address. Be sure to send the correct
 // amount of bytes as configured as payload on the receiver.
 {
-    while (PTX) {}                  // Wait until last paket is send
+    //Wait for previous TX to end or timeout after 1s
+    if(PTX) {
+        unsigned char timeout = 100;
+        unsigned char clearTX = 1;
+        while(timeout) {
+            if(PTX) { timeout--; Delay_ms(10); }
+            else { timeout = 0; clearTX = 0; }
+        }
+
+        if(clearTX) {
+            wl_module_CSN_lo; // Pull down chip select
+            spi_fast_shift(FLUSH_TX); // Flush TX-FIFO
+            wl_module_CSN_hi; // Pull up chip select
+        }
+    }
+    //while (PTX) {}                  // Wait until last paket is send
 
     wl_module_CE_lo;
 

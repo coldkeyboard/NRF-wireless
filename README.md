@@ -1,5 +1,9 @@
 # nRF24L01 library for PIC microcontrollers
 
+##Modified by ColdKeyboard for PIC18F45K50
++ Fixed infinite loop error caused when nRF24L01 keeps IRQ low or PIC misses interrupt because of higher priority.
++ Still porting and testing this library so there are some debugging functions, outputs and etc.
+
 This library is a port of the [tinkerer.eu MiRF library](http://tinkerer.eu/AVRLib/nRF24L01)
 for PIC microcontrollers. 
 
