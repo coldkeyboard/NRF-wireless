@@ -52,14 +52,14 @@ extern volatile unsigned char PTX;
 #define wl_module_TX_NR_5		5
 
 // Pin definitions for chip select and chip enabled of the wl-module
-#define CE LATB3 // RB3
-#define CSN LATB4 // RB4
+#define CE LATB4 // RB3
+#define CSN LATB5 // RB4
 
 // Definitions for selecting and enabling wl_module module
-#define wl_module_CSN_hi     LATBbits.CSN = 1;
-#define wl_module_CSN_lo     LATBbits.CSN = 0;
-#define wl_module_CE_hi      LATBbits.CE = 1;
-#define wl_module_CE_lo      LATBbits.CE = 0;
+#define wl_module_CSN_hi     (LATBbits.CSN = 1)
+#define wl_module_CSN_lo     (LATBbits.CSN = 0)
+#define wl_module_CE_hi      (LATBbits.CE = 1)
+#define wl_module_CE_lo      (LATBbits.CE = 0)
 
 // Defines for setting the wl_module registers for transmitting or receiving mode
 #define TX_POWERUP wl_module_config_register(CONFIG, wl_module_CONFIG | ( (1<<PWR_UP) | (0<<PRIM_RX) ) )
